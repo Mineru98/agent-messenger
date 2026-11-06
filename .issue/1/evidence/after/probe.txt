@@ -1,0 +1,14 @@
+# after — commit ebec9c50, sync-state present (copy), getChats({all:true})
+LOGINLIST syncState? true {"status":0,"eof":true,"n":0,"lastTokenId":"3967918844164020302","lastChatId":"<redacted>","revision":31,"keys":["status","userId","revision","revisionInfo","rp","minLogId","sb","chatDatas","delChatIds","kc","mcmRevision","lastTokenId","lastChatId","ltk","lbk","eof"]}
+LCHATLIST req undefined undefined → {"status":0,"eof":true,"n":6,"lastTokenId":"3967918844600243705","lastChatId":"<redacted>","keys":["status","chatDatas","delChatIds","kc","eof","mcmRevision","lastTokenId","lastChatId","ltk","lbk"]}
+RESULT count 6
+# CLI: chat list (default, no --all) with same sync-state copy
+count 6
+<chat_id redacted> DirectChat <name redacted>
+<chat_id redacted> OM <name redacted>
+<chat_id redacted> OM <name redacted>
+<chat_id redacted> OD <name redacted>
+<chat_id redacted> OD <name redacted>
+<chat_id redacted> PlusChat <name redacted>
+# sync-state still saved
+kakaotalk-sync-state-<deviceUuid>.json

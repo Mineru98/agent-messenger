@@ -1,0 +1,4 @@
+# before — commit 14fd2b87, sync-state present (copy), getChats({all:true})
+LOGINLIST syncState? true {"status":0,"eof":true,"n":0,"lastTokenId":"3967917490100074104","lastChatId":"<redacted>","revision":31,"keys":["status","userId","revision","revisionInfo","rp","minLogId","sb","chatDatas","delChatIds","kc","mcmRevision","lastTokenId","lastChatId","ltk","lbk","eof"]}
+LCHATLIST req 3967917490100074104 <redacted> → {"status":0,"eof":true,"n":0,"lastTokenId":"3967917490225936212","lastChatId":"<redacted>","keys":["status","chatDatas","delChatIds","kc","eof","mcmRevision","lastTokenId","lastChatId","ltk","lbk"]}
+RESULT count 0
