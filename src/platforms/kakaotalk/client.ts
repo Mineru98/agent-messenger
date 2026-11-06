@@ -108,6 +108,9 @@ type ChatData = Record<string, unknown>
 interface SessionState {
   session: LocoSession
   loginResult: LoginListResponse
+  // LOGINLIST was sent with a persisted sync state, so loginResult.chatDatas only
+  // carries chats changed since that state — not the full chat list.
+  loginUsedSyncState: boolean
 }
 
 class MemberNameCache {
@@ -1047,7 +1050,7 @@ export class KakaoTalkClient {
 
       this.nameCache.ingest((loginResult.chatDatas ?? []) as ChatData[])
 
-      return { session, loginResult }
+      return { session, loginResult, loginUsedSyncState: syncState !== undefined }
     } catch (error) {
       session.close()
       const code = isLoginResponseError(error) ? error.code : 'login_failed'
@@ -1113,7 +1116,7 @@ export class KakaoTalkClient {
   }
 
   async getChats(options?: { all?: boolean; search?: string; resolveTitles?: boolean }): Promise<KakaoChat[]> {
-    return this.executeWithReconnect(async ({ session, loginResult }) => {
+    return this.executeWithReconnect(async ({ session, loginResult, loginUsedSyncState }) => {
       try {
         const allChats: ChatData[] = []
         const seenChatIds = new Set<string>()
@@ -1124,18 +1127,21 @@ export class KakaoTalkClient {
         // the login snapshot is empty. New device registrations often return an empty
         // chatDatas with eof=true because the server has no prior sync state for the
         // device — LCHATLIST fetches the canonical chat list regardless of device history.
+        // A sync-state login is a delta, so it always paginates from the zero cursor:
+        // its lastTokenId/lastChatId point past every chat and would yield an empty page.
         const snapshotEmpty = allChats.length === 0
-        if (options?.all || options?.search || snapshotEmpty) {
-          let cursor: ChatListResponse = loginResult
+        const fetchFirstPage = snapshotEmpty || loginUsedSyncState
+        if (options?.all || options?.search || fetchFirstPage) {
+          let cursor = (loginUsedSyncState ? {} : loginResult) as ChatListResponse
           let pages = 0
           const requireCompleteList = options?.all === true
 
           while (pages < MAX_PAGES) {
-            // Trust eof only when the snapshot had data. When the snapshot was empty
-            // (new device), ignore eof for the first iteration so we always attempt
-            // at least one LCHATLIST call.
-            if (cursor.eof && !snapshotEmpty) break
-            if (cursor.eof && snapshotEmpty && pages > 0) break
+            // Trust eof only when the snapshot is a complete first page. Otherwise
+            // (new device or sync-state delta), ignore eof for the first iteration so
+            // we always attempt at least one LCHATLIST call.
+            if (cursor.eof && !fetchFirstPage) break
+            if (cursor.eof && fetchFirstPage && pages > 0) break
 
             const lastTokenId = cursorToLong(cursor.lastTokenId)
             const lastChatId = cursorToLong(cursor.lastChatId)
