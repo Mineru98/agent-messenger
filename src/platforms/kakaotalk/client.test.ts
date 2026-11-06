@@ -638,6 +638,76 @@ describe('KakaoTalkClient', () => {
       client.close()
     })
 
+    describe('with a persisted sync state (delta LOGINLIST)', () => {
+      const fullListPage = {
+        statusCode: 0,
+        body: {
+          status: 0,
+          chatDatas: structuredClone(DEFAULT_LOGIN_RESULT.chatDatas),
+          lastTokenId: makeLong(77),
+          lastChatId: makeLong(200),
+          eof: true,
+        },
+      }
+
+      beforeEach(async () => {
+        await writeFile(
+          join(configDir, 'kakaotalk-sync-state-device1.json'),
+          JSON.stringify({
+            version: 2,
+            revision: 31,
+            chatIds: [makeLong(100), makeLong(200)],
+            maxIds: [makeLong(999), makeLong(500)],
+            lastTokenId: makeLong(40),
+            lbk: 0,
+          }),
+        )
+      })
+
+      it('lists every chat from LCHATLIST starting at the zero cursor when the delta is empty', async () => {
+        // given — the server only returns what changed since the stored sync state
+        mockLogin.mockResolvedValue({
+          chatDatas: [],
+          lastTokenId: makeLong(50),
+          lastChatId: makeLong(200),
+          eof: true,
+        })
+        mockGetChatList.mockResolvedValueOnce(structuredClone(fullListPage))
+
+        // when
+        const client = await new KakaoTalkClient().login({ oauthToken: 'token', userId: 'user1', deviceUuid: 'device1' })
+        const chats = await client.getChats({ all: true })
+
+        // then
+        expect(chats.map((chat) => chat.chat_id)).toEqual(['100', '200'])
+        expect(mockGetChatList).toHaveBeenCalledTimes(1)
+        expect(mockGetChatList.mock.calls[0]).toEqual([undefined, undefined])
+
+        client.close()
+      })
+
+      it('lists unchanged chats too when the delta only carries some chats', async () => {
+        // given — only chat 200 changed since the stored sync state
+        mockLogin.mockResolvedValue({
+          chatDatas: [structuredClone(DEFAULT_LOGIN_RESULT.chatDatas[1])],
+          lastTokenId: makeLong(50),
+          lastChatId: makeLong(200),
+          eof: true,
+        })
+        mockGetChatList.mockResolvedValueOnce(structuredClone(fullListPage))
+
+        // when — default chat list (no --all flag)
+        const client = await new KakaoTalkClient().login({ oauthToken: 'token', userId: 'user1', deviceUuid: 'device1' })
+        const chats = await client.getChats()
+
+        // then
+        expect(chats.map((chat) => chat.chat_id)).toEqual(['100', '200'])
+        expect(mockGetChatList.mock.calls[0]).toEqual([undefined, undefined])
+
+        client.close()
+      })
+    })
+
     it('paginates when all=true and not eof', async () => {
       const loginResult = {
         ...DEFAULT_LOGIN_RESULT,
