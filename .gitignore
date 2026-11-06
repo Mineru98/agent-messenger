@@ -34,6 +34,7 @@ coverage/
 
 .sisyphus
 .omo
+.omc
 
 # issue-* workspace — evidence only stays committed so issue comments render
 .issue/**
