@@ -1,0 +1,8 @@
+
+ 4156 pass
+ 1 fail
+ 8427 expect() calls
+Ran 4157 tests across 281 files. [57.06s]
+
+# 실패 1건: "list: uses live team display names for a device-code account"
+# 수정 전 main(0e44c7b1) 체크아웃에서도 같은 1건이 실패한다(4154 pass / 1 fail). 이번 변경과 무관.

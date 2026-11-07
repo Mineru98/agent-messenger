@@ -1,0 +1,26 @@
+# commit 0e44c7b1 + 회귀 테스트만 추가 (client.ts 수정 전)
+ responseFailureKind: undefined,
+ responseStatusSource: undefined,
+ getChatFailureReason: undefined,
+       code: "get_member_snapshot_failed"
+      at wrapError (/home/mineru/Documents/Github/agent-messenger-issue-3/src/platforms/kakaotalk/client.ts:536:10)
+      at <anonymous> (/home/mineru/Documents/Github/agent-messenger-issue-3/src/platforms/kakaotalk/client.ts:1484:15)
+      at async executeWithReconnect (/home/mineru/Documents/Github/agent-messenger-issue-3/src/platforms/kakaotalk/client.ts:1007:20)
+775 |       throw new Error(`${source} member snapshot invalid`)
+776 |     }
+777 |     const record = raw as Record<string, unknown>
+778 |     const id = memberIdKey(record)
+779 |     if (!id || ids.has(id)) {
+780 |       throw new Error(`${source} member snapshot invalid`)
+                      ^
+error: CHATINFO member snapshot invalid
+      at exactMemberRecords (/home/mineru/Documents/Github/agent-messenger-issue-3/src/platforms/kakaotalk/client.ts:780:17)
+      at channelMemberView (/home/mineru/Documents/Github/agent-messenger-issue-3/src/platforms/kakaotalk/client.ts:806:26)
+      at <anonymous> (/home/mineru/Documents/Github/agent-messenger-issue-3/src/platforms/kakaotalk/client.ts:1456:27)
+      at async executeWithReconnect (/home/mineru/Documents/Github/agent-messenger-issue-3/src/platforms/kakaotalk/client.ts:1007:20)
+(fail) KakaoTalkClient > getMembers / getMembersByIds > keeps 64-bit member ids above Number.MAX_SAFE_INTEGER exact in the snapshot [26.66ms]
+ 1 pass
+ 203 filtered out
+ 1 fail
+ 3 expect() calls
+Ran 2 tests across 1 file. [85.00ms]
