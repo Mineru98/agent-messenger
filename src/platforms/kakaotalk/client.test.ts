@@ -3749,6 +3749,42 @@ describe('KakaoTalkClient', () => {
       client.close()
     })
 
+    it('keeps 64-bit member ids above Number.MAX_SAFE_INTEGER exact in the snapshot', async () => {
+      // given — real KakaoTalk user ids exceed Number.MAX_SAFE_INTEGER
+      const visible = [{ userId: Long.fromString('7649399319532113545'), nickName: 'Alice' }]
+      mockGetChannelInfo
+        .mockResolvedValueOnce(memberChannelInfo(2, visible))
+        .mockResolvedValueOnce(memberChannelInfo(2, visible))
+      mockGetAllMembers.mockResolvedValue({
+        statusCode: 0,
+        body: {
+          members: [visible[0], { userId: makeLong(422947151), nickName: 'Bot' }],
+        },
+      })
+
+      // when
+      const client = await new KakaoTalkClient().login({ oauthToken: 'token', userId: 'user1', deviceUuid: 'device1' })
+      const snapshot = await client.getMemberSnapshot('100')
+
+      // then
+      expect(snapshot.members.map((member) => member.user_id)).toEqual(['7649399319532113545', '422947151'])
+
+      client.close()
+    })
+
+    it('fails closed on a negative 64-bit member identity', async () => {
+      mockGetChannelInfo.mockResolvedValueOnce(
+        memberChannelInfo(1, [{ userId: Long.fromString('-7649399319532113545'), nickName: 'Negative' }]),
+      )
+
+      const client = await new KakaoTalkClient().login({ oauthToken: 'token', userId: 'user1', deviceUuid: 'device1' })
+      await expect(client.getMemberSnapshot('100')).rejects.toMatchObject({
+        code: 'get_member_snapshot_failed',
+      })
+
+      client.close()
+    })
+
     it('fails closed when active membership changes across the snapshot', async () => {
       mockGetChannelInfo.mockResolvedValueOnce(memberChannelInfo(2)).mockResolvedValueOnce(memberChannelInfo(3))
       mockGetAllMembers.mockResolvedValue({

@@ -728,7 +728,7 @@ function memberIdKey(member: Record<string, unknown>): string | null {
     return null
   }
   const numeric = (BigInt((high as number) >>> 0) << 32n) | BigInt((low as number) >>> 0)
-  return numeric > 0n && numeric <= BigInt(Number.MAX_SAFE_INTEGER) ? numeric.toString() : null
+  return numeric > 0n && numeric <= 0x7fffffffffffffffn ? numeric.toString() : null
 }
 
 function mergeMemberRecords(
