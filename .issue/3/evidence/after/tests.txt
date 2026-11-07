@@ -1,0 +1,18 @@
+# 수정 후 회귀 테스트
+
+ 2 pass
+ 203 filtered out
+ 0 fail
+ 4 expect() calls
+Ran 2 tests across 1 file. [71.00ms]
+
+# 수정 후 kakaotalk client 전체
+
+ 205 pass
+ 0 fail
+ 720 expect() calls
+Ran 205 tests across 1 file. [1.59s]
+
+# typecheck
+$ tsc --noEmit
+exit=0
